@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { BigNumber, ethers } from "ethers";
 import { useState } from "react";
-import { AppBar, Box, Button, Grid, Paper, styled, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, Grid, Modal, Paper, styled, TextField, Toolbar, Typography } from '@mui/material';
 
 //Esto es de referencia para cuando haya que importar el factory de verdad
 // import { Lottery__factory } from '../typechain-types/factories/contracts/Lottery__factory'
@@ -18,33 +18,47 @@ export default function Home() {
   const [provider, setProvider] = useState<Web3Provider>();
   const [balance, setBalance] = useState<Number>();
   const [connected, setConnected] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [offer, setOffer] = useState("");
+  const [owner, setOwner] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const modalStyle = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: '#1A2027',
+    color: 'white',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
 
   const products = [
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
+    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
   ]
 
   function formatBalance(unformattedBalance: String) {
@@ -55,7 +69,6 @@ export default function Home() {
     const formattedBalance = Number(unformattedBalance).toLocaleString('en', options)
     return Number(formattedBalance)
   }
-
 
   async function connectWallet() {
     if(typeof window.ethereum){
@@ -77,11 +90,23 @@ export default function Home() {
         setBalance(balance);
 
         setConnected(true);
+
+        //Implement logic to check if owner of an item listing
+        setOwner(true);
         
       } catch (error) {
         console.log(error);
       }
     }
+  }
+
+  async function submitOffer() {
+    //Call contract function
+    const offerN = Number(offer);
+  }
+
+  async function closeAuction() {
+    //Call contract function
   }
 
   return (
@@ -116,19 +141,45 @@ export default function Home() {
       </Box>
 
       <Box sx={{ marginTop: 15 }}>
-        <Grid container spacing={3} columns={5}>
+        <Grid container spacing={3} columns={6}>
           {products.map((product, index) => {
             return (
-              <Grid item md={1} height="550px" key={index}>
-                <Item sx={{color: 'white', paddingX: 5}}>
-                  <img height="280px" src={product.image}/>
+              <Grid item md={1} height="620px" key={index}>
+                <Item id="products" onClick={handleOpen} sx={{color: 'white', paddingX: 5}}>
+                  <img height="300px" src={product.image}/>
                   <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
                     {product.title}
                   </Typography>
                   <Typography variant="h6" component="div" sx={{ textAlign: 'justify' }}>
                     {product.description}
                   </Typography>
+                  <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'end' }}>
+                        Price: {product.price} ETH
+                  </Typography>
                 </Item>
+                <Modal open={open} onClose={handleClose}>
+                  <Box sx={modalStyle}>
+                    <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
+                      {product.title}
+                    </Typography>
+                    <Typography variant="h6" component="div" sx={{ textAlign: 'justify', marginY: 2 }}>
+                      {product.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <TextField placeholder='0.0' sx={{input: { color: 'white', background: '#FFFFFF22', borderRadius: '10px', textAlign: "end" } }} variant="outlined" onChange={e => setOffer(e.target.value)}/>
+                      <Typography sx={{ flexGrow: 1, textAlign: 'center' }} variant="h6" component="div">
+                        Price: {product.price} ETH
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
+                      <Button variant="contained" onClick={submitOffer}>
+                        Make Offer!
+                      </Button>
+                      {owner && <Button variant="contained" onClick={closeAuction}>Close Auction!</Button>}
+                    </Box>
+                    
+                  </Box>
+                </Modal>
               </Grid>
             )
           })}
