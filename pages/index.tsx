@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { BigNumber, ethers } from "ethers";
 import { useState } from "react";
 import { AppBar, Box, Button, Grid, Modal, Paper, styled, TextField, Toolbar, Typography } from '@mui/material';
+import AddItemModal from '../src/components/AddItemModal';
 
 //Esto es de referencia para cuando haya que importar el factory de verdad
 // import { Lottery__factory } from '../typechain-types/factories/contracts/Lottery__factory'
@@ -21,6 +22,7 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [offer, setOffer] = useState("");
   const [owner, setOwner] = useState(false);
+  const [openModalAddItem, setOpenModalAddItem] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -109,6 +111,10 @@ export default function Home() {
     //Call contract function
   }
 
+  const handleClickOpenModalAddItem = () => {
+    setOpenModalAddItem(true);
+  };
+
   return (
     <>
       <Head>
@@ -118,6 +124,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/logo192.png" />
       </Head>
+
+      <AddItemModal open={openModalAddItem} setOpen={setOpenModalAddItem} />
 
       <Box sx={{ flexGrow: 1 }}>
         <AppBar sx={{ background: '#1A2027' }} position="fixed">
@@ -132,6 +140,9 @@ export default function Home() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               ETH Balance: {balance?.toString()}
             </Typography>
+            <Button variant="contained" onClick={handleClickOpenModalAddItem}>
+              Add Item
+            </Button>
             <Button color="inherit" onClick={connectWallet}>
               <img height="40px" src="/metamask.png"/>
               {connected ? 'Connection Successful!' : 'Connect to MetaMask'}
