@@ -122,7 +122,7 @@ export default function Home() {
       <Box sx={{ flexGrow: 1 }}>
         <AppBar sx={{ background: '#1A2027' }} position="fixed">
           <Toolbar>
-            <img id="logo" height="60px" src="/logo.jpg"/>
+            <img id="logo" height="50px" src="/logo.jpg"/>
             <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
               ExCrow
             </Typography>
@@ -133,7 +133,7 @@ export default function Home() {
               ETH Balance: {balance?.toString()}
             </Typography>
             <Button color="inherit" onClick={connectWallet}>
-              <img height="60px" src="/metamask.png"/>
+              <img height="40px" src="/metamask.png"/>
               {connected ? 'Connection Successful!' : 'Connect to MetaMask'}
             </Button>
           </Toolbar>
@@ -141,12 +141,12 @@ export default function Home() {
       </Box>
 
       <Box sx={{ marginTop: 15 }}>
-        <Grid container spacing={3} columns={6}>
+        <Grid container spacing={{ xs: 2, md: 2 }}  columns={{ xs: 2, sm: 4, md: 20 }}>
           {products.map((product, index) => {
             return (
-              <Grid item md={1} height="620px" key={index}>
+              <Grid item xs={6} sm={6} md={4} lg={2} key={index}>
                 <Item id="products" onClick={handleOpen} sx={{color: 'white', paddingX: 5}}>
-                  <img height="300px" src={product.image}/>
+                  <img height="130px" src={product.image}/>
                   <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
                     {product.title}
                   </Typography>
@@ -174,6 +174,9 @@ export default function Home() {
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
                       <Button variant="contained" onClick={submitOffer}>
                         Make Offer!
+                      </Button>
+                      <Button variant="contained" onClick={handleClose}>
+                        Cancel
                       </Button>
                       {owner && <Button variant="contained" onClick={closeAuction}>Close Auction!</Button>}
                     </Box>
