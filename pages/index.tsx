@@ -1,8 +1,10 @@
 import Head from 'next/head'
 import { BigNumber, ethers } from "ethers";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppBar, Box, Button, Grid, Modal, Paper, styled, TextField, Toolbar, Typography } from '@mui/material';
 import AddItemModal from '../components/AddItemModal';
+import abi from "../contract-files/artifacts/contracts/Escrow.sol/Escrow.json";
+import { Escrow__factory } from '../contract-files/typechain-types';
 
 //Esto es de referencia para cuando haya que importar el factory de verdad
 // import { Lottery__factory } from '../typechain-types/factories/contracts/Lottery__factory'
@@ -23,6 +25,9 @@ export default function Home() {
   const [offer, setOffer] = useState("");
   const [owner, setOwner] = useState(false);
   const [openModalAddItem, setOpenModalAddItem] = useState(false);
+  const contractAddress = "0x087b9B4C37424CDb39af8e5E45A5eb8D6Aa01C80";
+
+  const contractABI = abi;
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -71,6 +76,36 @@ export default function Home() {
     const formattedBalance = Number(unformattedBalance).toLocaleString('en', options)
     return Number(formattedBalance)
   }
+
+  const getProductsFromContract = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const contractFactory = new Escrow__factory(signer);
+        const _escrowContract = await contractFactory.attach(contractAddress);
+        // const _escrowContract = new ethers.Contract(
+        //   contractAddress,
+        //   contractABI,
+        //   signer
+        // );
+        let productos = await _escrowContract.GetAuctions();
+        // setTotalQuiz(Number(ethers.utils.formatEther(count)));
+        console.log("prodcust", productos);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log("errorrrrr", error)
+    }
+  }
+
+  useEffect(() => {
+    getProductsFromContract();
+  }, [])
+  
 
   async function connectWallet() {
     if(typeof window.ethereum){
