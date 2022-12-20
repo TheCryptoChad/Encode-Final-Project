@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { BigNumber, ethers } from "ethers";
 import { useState } from "react";
 import { AppBar, Box, Button, Grid, Modal, Paper, styled, TextField, Toolbar, Typography } from '@mui/material';
+import AddItemModal from '../components/AddItemModal';
 
 //Esto es de referencia para cuando haya que importar el factory de verdad
 // import { Lottery__factory } from '../typechain-types/factories/contracts/Lottery__factory'
@@ -21,6 +22,7 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [offer, setOffer] = useState("");
   const [owner, setOwner] = useState(false);
+  const [openModalAddItem, setOpenModalAddItem] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -109,6 +111,10 @@ export default function Home() {
     //Call contract function
   }
 
+  const handleClickOpenModalAddItem = () => {
+    setOpenModalAddItem(true);
+  };
+
   return (
     <>
       <Head>
@@ -119,34 +125,45 @@ export default function Home() {
         <link rel="apple-touch-icon" href="/logo192.png" />
       </Head>
 
+      <AddItemModal open={openModalAddItem} setOpen={setOpenModalAddItem} />
+
       <Box sx={{ flexGrow: 1 }}>
         <AppBar sx={{ background: '#1A2027' }} position="fixed">
           <Toolbar>
-            <img id="logo" height="60px" src="/logo.jpg"/>
+            <img id="logo" height="50px" src="/logo.jpg"/>
             <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
               ExCrow
             </Typography>
+
+            <Box sx={{ flexGrow: 1, justifyContent: 'start', display: 'flex' }}>
+              {connected ? <Button variant="contained" onClick={handleClickOpenModalAddItem}>List Item</Button> : "" }
+            </Box>
+
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Connected Account: {formattedAddress}
             </Typography>
+
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               ETH Balance: {balance?.toString()}
             </Typography>
-            <Button color="inherit" onClick={connectWallet}>
-              <img height="60px" src="/metamask.png"/>
-              {connected ? 'Connection Successful!' : 'Connect to MetaMask'}
-            </Button>
+            
+            <Box sx={{ flexGrow: 1, justifyContent: 'end', display: 'flex' }}>
+              <Button color="inherit" onClick={connectWallet}>
+                <img height="40px" src="/metamask.png"/>
+                {connected ? 'Connection Successful!' : 'Connect to MetaMask'}
+              </Button>
+            </Box>
           </Toolbar>
         </AppBar>
       </Box>
 
       <Box sx={{ marginTop: 15 }}>
-        <Grid container spacing={3} columns={6}>
+        <Grid container spacing={{ xs: 2, md: 2 }}  columns={{ xs: 2, sm: 4, md: 20 }}>
           {products.map((product, index) => {
             return (
-              <Grid item md={1} height="620px" key={index}>
+              <Grid item xs={6} sm={6} md={4} lg={2} key={index}>
                 <Item id="products" onClick={handleOpen} sx={{color: 'white', paddingX: 5}}>
-                  <img height="300px" src={product.image}/>
+                  <img height="130px" src={product.image}/>
                   <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
                     {product.title}
                   </Typography>
@@ -159,6 +176,11 @@ export default function Home() {
                 </Item>
                 <Modal open={open} onClose={handleClose}>
                   <Box sx={modalStyle}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end'}}>
+                      <Button variant="contained" onClick={handleClose}>
+                        X
+                      </Button>
+                    </Box>
                     <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
                       {product.title}
                     </Typography>
@@ -177,7 +199,6 @@ export default function Home() {
                       </Button>
                       {owner && <Button variant="contained" onClick={closeAuction}>Close Auction!</Button>}
                     </Box>
-                    
                   </Box>
                 </Modal>
               </Grid>
