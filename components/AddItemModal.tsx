@@ -1,4 +1,5 @@
 import * as React from 'react';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
@@ -7,18 +8,64 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Box } from '@mui/material';
+import { useState } from 'react';
+import { BigNumber, ethers } from "ethers";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
-export default function AddItemModal({open, setOpen}) {
+export default function AddItemModal({open, setOpen, getAuctions}) {
+
+  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
+  const [minAmount, setMinAmount] = useState();
+  const [loadingTxn, setLoadingTxn] = useState(false);
+
+  const contractAddress = "0x087b9B4C37424CDb39af8e5E45A5eb8D6Aa01C80"
+
+  async function getAbi() {
+    const data = require('../contract-files/artifacts/contracts/Escrow.sol/Escrow.json');
+    const abi = data.abi;
+    return abi
+  }
 
   const handleClose = () => {
     setOpen(false);
   };
 
+  async function addAuction() {
+    const abi = await getAbi();     
+    
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        console.log("entraa")
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(contractAddress, abi, signer);
+
+        setLoadingTxn(true);
+        const publishTxn = await contract.PublishAuction(title, description, ethers.utils.parseUnits(minAmount, 18));
+
+        await publishTxn.wait();
+        setLoadingTxn(false);
+
+        await getAuctions();
+        handleClose();
+      } else {
+        toast.error("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      toast.error("¡Something wrong!" + error.message);
+      setLoadingTxn(false);
+    }
+  }
+
   return (
     <div>
       <Dialog sx={{border: '2px solid #000'}} open={open} onClose={handleClose}>
-          <DialogTitle sx={{color:'white', bgcolor: '#1A2027', borderTop: '2px solid #000', borderRight: '2px solid #000', borderLeft: '2px solid #000'}}>List Item</DialogTitle>
+          <DialogTitle sx={{color:'white', bgcolor: '#1A2027', borderTop: '2px solid #000', borderRight: '2px solid #000', borderLeft: '2px solid #000'}}>ADD Item</DialogTitle>
           <DialogContent sx={{color:'white', bgcolor: '#1A2027', borderRight: '2px solid #000', borderLeft: '2px solid #000'}}>
           <TextField
               sx={{input: { color: 'white'} }}
@@ -29,6 +76,7 @@ export default function AddItemModal({open, setOpen}) {
               type="text"
               fullWidth
               variant="standard"
+              onChange={e => setTitle(e.target.value)}
             />       
             <TextField
               sx={{input: { color: 'white'} }}
@@ -39,6 +87,7 @@ export default function AddItemModal({open, setOpen}) {
               type="text"
               fullWidth
               variant="standard"
+              onChange={e => setDescription(e.target.value)}
             />
             <TextField
               sx={{input: { color: 'white', textAlign: "end"} }}
@@ -49,11 +98,12 @@ export default function AddItemModal({open, setOpen}) {
               type="text"
               fullWidth
               variant="standard"
+              onChange={e => setMinAmount(e.target.value)}
             />
           </DialogContent>
           <DialogActions sx={{color:'white', bgcolor: '#1A2027', borderBottom: '2px solid #000', borderRight: '2px solid #000', borderLeft: '2px solid #000'}}>
-            <Button variant="contained" onClick={handleClose}>Cancel</Button>
-            <Button variant="contained" onClick={handleClose}>Add</Button>
+            <LoadingButton loading={loadingTxn} variant="contained" onClick={handleClose}>Cancel</LoadingButton>
+            <LoadingButton loading={loadingTxn} variant="contained" onClick={addAuction}>Add</LoadingButton>
           </DialogActions>
 
         

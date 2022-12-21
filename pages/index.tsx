@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { ethers } from "ethers";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppBar, Box, Button, Grid, Modal, Paper, styled, TextField, Toolbar, Typography } from '@mui/material';
 import AddItemModal from '../components/AddItemModal';
 
@@ -117,6 +117,11 @@ export default function Home() {
     return(auctions)
   }
 
+  useEffect(() => {
+    getAuctions();  
+  }, [])
+  
+
   async function getEscrows() {
     const abi = await getAbi();
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -185,7 +190,7 @@ export default function Home() {
         <link rel="apple-touch-icon" href="/logo192.png" />
       </Head>
 
-      <AddItemModal open={openModalAddItem} setOpen={setOpenModalAddItem} />
+      <AddItemModal open={openModalAddItem} setOpen={setOpenModalAddItem} getAuctions={getAuctions} />
 
       <Box sx={{ flexGrow: 1 }}>
         <AppBar sx={{ background: '#1A2027' }} position="fixed">
@@ -196,7 +201,7 @@ export default function Home() {
             </Typography>
 
             <Box sx={{ flexGrow: 1, justifyContent: 'start', display: 'flex', gap: 5 }}>
-              {connected ? <Button variant="contained" onClick={handleClickOpenModalAddItem}>List Item</Button> : "" }
+              {connected ? <Button variant="contained" onClick={handleClickOpenModalAddItem}>ADD Item</Button> : "" }
               {connected ? <Button variant="contained" onClick={getAuctions}>Show Auctions</Button> : "" }
               {connected ? <Button variant="contained" onClick={getEscrows}>Show Escrows</Button> : "" }
             </Box>
