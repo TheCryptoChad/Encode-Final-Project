@@ -29,7 +29,7 @@ export default function Home() {
   const [selectedAuction, setSelectedAuction] = useState([]);
   const [selectedEscrow, setSelectedEscrow] = useState([]);
 
-  const contractAddress = "0x087b9B4C37424CDb39af8e5E45A5eb8D6Aa01C80"
+  const contractAddress = "0x5a41069AFd6Ff3dFCB0ED28847EAB9F5721b0e08"
 
   const handleOpenAuction = async (auction) => {
     setOpen(true);
@@ -200,21 +200,21 @@ export default function Home() {
               ExCrow
             </Typography>
 
-            <Box sx={{ flexGrow: 1, justifyContent: 'start', display: 'flex', gap: 5 }}>
+            <Box sx={{ flexGrow: 1, justifyContent: 'start', display: 'flex', gap: 3, fontSize: 16 }}>
               {connected ? <Button variant="contained" onClick={handleClickOpenModalAddItem}>ADD Item</Button> : "" }
               {connected ? <Button variant="contained" onClick={getAuctions}>Show Auctions</Button> : "" }
               {connected ? <Button variant="contained" onClick={getEscrows}>Show Escrows</Button> : "" }
             </Box>
 
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: 16 }}>
               Connected Account: {formattedAddress}
             </Typography>
 
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: 16 }}>
               ETH Balance: {balance?.toString()}
             </Typography>
             
-            <Box sx={{ flexGrow: 1, justifyContent: 'end', display: 'flex' }}>
+            <Box sx={{ flexGrow: 1, justifyContent: 'end', display: 'flex', fontSize: 16 }}>
               <Button color="inherit" onClick={connectWallet}>
                 <img height="40px" src="/metamask.png"/>
                 {connected ? 'Connection Successful!' : 'Connect to MetaMask'}
@@ -232,20 +232,20 @@ export default function Home() {
               return (
                 <Grid item xs={6} sm={6} md={4} lg={2} key={auction.id}>
                   <Item id="auctions" onClick={() => {handleOpenAuction(auction)}} sx={{color: 'white', padding: 5}}>
-                    <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
+                    <Typography variant="h4" component="div" sx={{ marginY: 2 }}>
                       {auction.tittle}
                     </Typography>
                     <Typography variant="h6" component="div" sx={{ textAlign: 'justify' }}>
                       {auction.description}
                     </Typography>
                     <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
-                          Highest Bid: {ethers.utils.formatEther(auction.minAmount.toString())} ETH
+                          Highest Bid: <br/>{ethers.utils.formatEther(auction.minAmount.toString())} ETH
                     </Typography>
                     <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
-                          Highest Bidder: {formatAddress(auction.highestBidder)}
+                          Highest Bidder: <br/>{formatAddress(auction.highestBidder)}
                     </Typography>
                     <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
-                          Seller: {formatAddress(auction.owner)}
+                          Seller: <br/>{formatAddress(auction.owner)}
                     </Typography>
                   </Item>
   
@@ -301,9 +301,6 @@ export default function Home() {
                       Owner: {formatAddress(escrow.owner)}
                     </Typography>
                     {escrow.ownerApproved ? <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'green' }}>Approved!</Typography> : <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'red' }}>Pending...</Typography>}
-                    <Button variant="contained" onClick={() => {approveEscrow(escrow.id)}}>
-                      Approve Escrow
-                    </Button>
                   </Item>
   
                   <Modal open={open} onClose={handleClose}>
