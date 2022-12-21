@@ -21,7 +21,7 @@ export default function AddItemModal({open, setOpen, getAuctions}) {
   const [minAmount, setMinAmount] = useState();
   const [loadingTxn, setLoadingTxn] = useState(false);
 
-  const contractAddress = "0x087b9B4C37424CDb39af8e5E45A5eb8D6Aa01C80"
+  const contractAddress = "0x5a41069AFd6Ff3dFCB0ED28847EAB9F5721b0e08"
 
   async function getAbi() {
     const data = require('../contract-files/artifacts/contracts/Escrow.sol/Escrow.json');
