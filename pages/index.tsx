@@ -5,6 +5,8 @@ import { AppBar, Box, Button, Grid, Modal, Paper, styled, TextField, Toolbar, Ty
 import AddItemModal from '../components/AddItemModal';
 import abi from "../contract-files/artifacts/contracts/Escrow.sol/Escrow.json";
 import { Escrow__factory } from '../contract-files/typechain-types';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 //Esto es de referencia para cuando haya que importar el factory de verdad
 // import { Lottery__factory } from '../typechain-types/factories/contracts/Lottery__factory'
