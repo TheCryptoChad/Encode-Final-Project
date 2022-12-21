@@ -6,7 +6,7 @@ body {
     border-radius: 50%;
 }
 
-#products:hover {
+#auctions:hover {
     box-shadow: 0px 0px 15px white;
     cursor: pointer;
 }

@@ -1,15 +1,12 @@
 import Head from 'next/head'
-import { BigNumber, ethers } from "ethers";
-import { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import { useState, useEffect } from "react";
 import { AppBar, Box, Button, Grid, Modal, Paper, styled, TextField, Toolbar, Typography } from '@mui/material';
 import AddItemModal from '../components/AddItemModal';
 import abi from "../contract-files/artifacts/contracts/Escrow.sol/Escrow.json";
 import { Escrow__factory } from '../contract-files/typechain-types';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-//Esto es de referencia para cuando haya que importar el factory de verdad
-// import { Lottery__factory } from '../typechain-types/factories/contracts/Lottery__factory'
 
 const Item = styled(Paper)(() => ({
   backgroundColor: '#1A2027',
@@ -20,19 +17,36 @@ const Item = styled(Paper)(() => ({
 export default function Home() {
   const [address, setAddress] = useState("");
   const [formattedAddress, setFormattedAddress] = useState("");
-  const [provider, setProvider] = useState<Web3Provider>();
   const [balance, setBalance] = useState<Number>();
   const [connected, setConnected] = useState(false);
   const [open, setOpen] = useState(false);
   const [offer, setOffer] = useState("");
   const [owner, setOwner] = useState(false);
   const [openModalAddItem, setOpenModalAddItem] = useState(false);
-  const contractAddress = "0x087b9B4C37424CDb39af8e5E45A5eb8D6Aa01C80";
+  const [bidSuccess, setBidSuccess] = useState("");
+  const [closeSuccess, setCloseSuccess] = useState("");
+  const [approveSuccess, setApproveSuccess] = useState("");
+  const [showAuction, setShowAuction] = useState<boolean>(true);
 
-  const contractABI = abi;
+  const [auctions, setAuctions] = useState([]);
+  const [escrows, setEscrows] = useState([]);
+  const [selectedAuction, setSelectedAuction] = useState([]);
+  const [selectedEscrow, setSelectedEscrow] = useState([]);
 
-  const handleOpen = () => setOpen(true);
+  const contractAddress = "0x087b9B4C37424CDb39af8e5E45A5eb8D6Aa01C80"
+
+  const handleOpenAuction = async (auction) => {
+    setOpen(true);
+    await setSelectedAuction(auction);
+  }
+
+  const handleOpenEscrow = async (escrow) => { 
+    setOpen(true);
+    await setSelectedEscrow(escrow);
+  }
+
   const handleClose = () => setOpen(false);
+
   const modalStyle = {
     position: 'absolute' as 'absolute',
     top: '50%',
@@ -46,29 +60,11 @@ export default function Home() {
     p: 4,
   };
 
-  const products = [
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-    {title: 'Racing Car', price: 0.5, description: 'An amazing antique racing car from the great year of 1922, great for collections. Almost untouched from the day it was purchased, a true necessity of a real collector.', image: '/metamask.png'},
-  ]
+  async function getAbi() {
+    const data = require('../contract-files/artifacts/contracts/Escrow.sol/Escrow.json');
+    const abi = data.abi;
+    return abi
+  }
 
   function formatBalance(unformattedBalance: String) {
     const options = { 
@@ -79,35 +75,14 @@ export default function Home() {
     return Number(formattedBalance)
   }
 
-  const getProductsFromContract = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const contractFactory = new Escrow__factory(signer);
-        const _escrowContract = await contractFactory.attach(contractAddress);
-        // const _escrowContract = new ethers.Contract(
-        //   contractAddress,
-        //   contractABI,
-        //   signer
-        // );
-        let productos = await _escrowContract.GetAuctions();
-        // setTotalQuiz(Number(ethers.utils.formatEther(count)));
-        console.log("prodcust", productos);
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.log("errorrrrr", error)
+  function formatAddress(unformattedAddress: String){
+    if(unformattedAddress != undefined){
+      const addressStart = unformattedAddress.substring(0, 5);
+      const addressEnd = unformattedAddress.substring(unformattedAddress.length-5, unformattedAddress.length);
+      return(`${addressStart}...${addressEnd}`)
     }
+    formatAddress(unformattedAddress)
   }
-
-  useEffect(() => {
-    getProductsFromContract();
-  }, [])
-  
 
   async function connectWallet() {
     if(typeof window.ethereum){
@@ -122,7 +97,6 @@ export default function Home() {
         setFormattedAddress(addressStart+"..."+addressEnd);
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        setProvider(provider);
 
         const balanceBN = await provider.getBalance(accounts[0]);
         const balance = formatBalance(ethers.utils.formatEther(balanceBN));
@@ -130,22 +104,75 @@ export default function Home() {
 
         setConnected(true);
 
-        //Implement logic to check if owner of an item listing
-        setOwner(true);
-        
       } catch (error) {
         console.log(error);
       }
     }
   }
 
-  async function submitOffer() {
-    //Call contract function
-    const offerN = Number(offer);
+  async function getAuctions() {
+    const abi = await getAbi();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const contract = new ethers.Contract(contractAddress, abi, provider);
+    const auctions = await contract.GetAuctions()
+    setAuctions(auctions)
+    setShowAuction(true)
+    console.log(auctions)
+    return(auctions)
   }
 
-  async function closeAuction() {
+  async function getEscrows() {
+    const abi = await getAbi();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const contract = new ethers.Contract(contractAddress, abi, provider);
+    const escrows = await contract.GetEscrows()
+    setEscrows(escrows)
+    setShowAuction(false)
+    console.log(escrows)
+    return(escrows)
+  }
+
+  async function submitOffer(id) {
     //Call contract function
+    const abi = await getAbi();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(contractAddress, abi, provider);
+    const tx = await contract.connect(signer).Bid(id, {value: ethers.utils.parseEther(offer)});
+    const receipt = await tx.wait()
+    setBidSuccess(`Bid successful!`)
+    getAuctions()
+    setTimeout(() => {
+      setBidSuccess(``)
+    }, 5000)
+  }
+
+  async function closeAuction(id) {
+    const abi = await getAbi();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(contractAddress, abi, provider);
+    const tx = await contract.connect(signer).Close(id);
+    const receipt = await tx.wait()
+    setCloseSuccess(`Auction Close Successful!`)
+    getAuctions()
+    setTimeout(() => {
+      setCloseSuccess(``)
+    }, 5000)
+  }
+
+  async function approveEscrow(id) {
+    const abi = await getAbi();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(contractAddress, abi, provider);
+    const tx = await contract.connect(signer).Approve(id);
+    const receipt = await tx.wait()
+    setApproveSuccess(`Escrow Approval Successful!`)
+    getEscrows()
+    setTimeout(() => {
+      setApproveSuccess(``)
+    }, 5000)
   }
 
   const handleClickOpenModalAddItem = () => {
@@ -172,8 +199,10 @@ export default function Home() {
               ExCrow
             </Typography>
 
-            <Box sx={{ flexGrow: 1, justifyContent: 'start', display: 'flex' }}>
+            <Box sx={{ flexGrow: 1, justifyContent: 'start', display: 'flex', gap: 5 }}>
               {connected ? <Button variant="contained" onClick={handleClickOpenModalAddItem}>List Item</Button> : "" }
+              {connected ? <Button variant="contained" onClick={getAuctions}>Show Auctions</Button> : "" }
+              {connected ? <Button variant="contained" onClick={getEscrows}>Show Escrows</Button> : "" }
             </Box>
 
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -194,55 +223,123 @@ export default function Home() {
         </AppBar>
       </Box>
 
+      {showAuction ?
       <Box sx={{ marginTop: 15 }}>
         <Grid container spacing={{ xs: 2, md: 2 }}  columns={{ xs: 2, sm: 4, md: 20 }}>
-          {products.map((product, index) => {
-            return (
-              <Grid item xs={6} sm={6} md={4} lg={2} key={index}>
-                <Item id="products" onClick={handleOpen} sx={{color: 'white', paddingX: 5}}>
-                  <img height="130px" src={product.image}/>
-                  <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
-                    {product.title}
-                  </Typography>
-                  <Typography variant="h6" component="div" sx={{ textAlign: 'justify' }}>
-                    {product.description}
-                  </Typography>
-                  <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'end' }}>
-                        Price: {product.price} ETH
-                  </Typography>
-                </Item>
-                <Modal open={open} onClose={handleClose}>
-                  <Box sx={modalStyle}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end'}}>
-                      <Button variant="contained" onClick={handleClose}>
-                        X
-                      </Button>
-                    </Box>
+          {auctions.map((auction) => {
+            if(auction.active){
+              return (
+                <Grid item xs={6} sm={6} md={4} lg={2} key={auction.id}>
+                  <Item id="auctions" onClick={() => {handleOpenAuction(auction)}} sx={{color: 'white', padding: 5}}>
                     <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
-                      {product.title}
+                      {auction.tittle}
                     </Typography>
-                    <Typography variant="h6" component="div" sx={{ textAlign: 'justify', marginY: 2 }}>
-                      {product.description}
+                    <Typography variant="h6" component="div" sx={{ textAlign: 'justify' }}>
+                      {auction.description}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <TextField placeholder='0.0' sx={{input: { color: 'white', background: '#FFFFFF22', borderRadius: '10px', textAlign: "end" } }} variant="outlined" onChange={e => setOffer(e.target.value)}/>
-                      <Typography sx={{ flexGrow: 1, textAlign: 'center' }} variant="h6" component="div">
-                        Price: {product.price} ETH
+                    <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
+                          Highest Bid: {ethers.utils.formatEther(auction.minAmount.toString())} ETH
+                    </Typography>
+                    <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
+                          Highest Bidder: {formatAddress(auction.highestBidder)}
+                    </Typography>
+                    <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
+                          Seller: {formatAddress(auction.owner)}
+                    </Typography>
+                  </Item>
+  
+                  <Modal open={open} onClose={handleClose}>
+                    <Box sx={modalStyle}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end'}}>
+                        <Button variant="contained" onClick={handleClose}>
+                          X
+                        </Button>
+                      </Box>
+  
+                      <Typography variant="h3" component="div" sx={{ marginY: 2 }}>
+                        {selectedAuction.tittle}
+                      </Typography>
+  
+                      <Typography variant="h6" component="div" sx={{ textAlign: 'justify', marginY: 2 }}>
+                        {selectedAuction.description}
+                      </Typography>
+  
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                        <TextField placeholder='0.0' sx={{input: { color: 'white', background: '#FFFFFF22', borderRadius: '10px', textAlign: "end" } }} variant="outlined" onChange={e => setOffer(e.target.value)}/>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
+                        <Button variant="contained" onClick={() => {submitOffer(selectedAuction.id)}}>Make Offer!</Button>
+                        <Button variant="contained" onClick={() => {closeAuction(selectedAuction.id)}}>Close Auction!</Button>
+                      </Box>
+  
+                      <Typography sx={{ flexGrow: 1, textAlign: 'center', color:'green' }} variant="h6" component="div">
+                          {bidSuccess} {closeSuccess}
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
-                      <Button variant="contained" onClick={submitOffer}>
-                        Make Offer!
-                      </Button>
-                      {owner && <Button variant="contained" onClick={closeAuction}>Close Auction!</Button>}
-                    </Box>
-                  </Box>
-                </Modal>
-              </Grid>
-            )
+                  </Modal>
+                </Grid>
+              )
+            }
           })}
         </Grid>
       </Box>
+      :
+      <Box sx={{ marginTop: 15 }}>
+        <Grid container spacing={{ xs: 2, md: 2 }}  columns={{ xs: 2, sm: 4, md: 20 }}>
+          {escrows.map((escrow) => {
+            if(escrow.active){
+              return (
+                <Grid item xs={6} sm={6} md={4} lg={2} key={escrow.id}>
+                  <Item id="auctions" onClick={() => {handleOpenEscrow(escrow)}} sx={{color: 'white', padding: 5}}>
+                    <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
+                      Buyer: {formatAddress(escrow.buyer)}
+                    </Typography>
+                    {escrow.buyerApproved ? <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'green' }}>Approved!</Typography> : <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'red' }}>Pending...</Typography>}
+                    <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
+                      Owner: {formatAddress(escrow.owner)}
+                    </Typography>
+                    {escrow.ownerApproved ? <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'green' }}>Approved!</Typography> : <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'red' }}>Pending...</Typography>}
+                    <Button variant="contained" onClick={() => {approveEscrow(escrow.id)}}>
+                      Approve Escrow
+                    </Button>
+                  </Item>
+  
+                  <Modal open={open} onClose={handleClose}>
+                    <Box sx={modalStyle}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end'}}>
+                        <Button variant="contained" onClick={handleClose}>
+                          X
+                        </Button>
+                      </Box>
+  
+                      <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
+                          Buyer:
+                      </Typography>
+                      {escrow.buyerApproved ? <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'green' }}>Approved!</Typography> : <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'red' }}>Pending...</Typography>}
+                      <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start' }}>
+                          Owner:
+                      </Typography>
+                      {escrow.ownerApproved ? <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'green' }}>Approved!</Typography> : <Typography variant="h6" component="div" sx={{ marginY: 2, textAlign: 'start', color: 'red' }}>Pending...</Typography>}
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
+                        <Button variant="contained" onClick={() => {approveEscrow(escrow.id)}}>
+                          Approve Escrow
+                        </Button>
+                      </Box>
+  
+                      <Typography sx={{ flexGrow: 1, textAlign: 'center', color:'green' }} variant="h6" component="div">
+                          {approveSuccess}
+                      </Typography>
+                    </Box>
+                  </Modal>
+                </Grid>
+              )
+            }
+          })}
+        </Grid>
+      </Box>
+      }
 
     </>
   )
